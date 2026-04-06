@@ -1,0 +1,9 @@
+# Original source files
+BCBA Work/
+
+# Local dev server
+serve.ps1
+serve.cmd
+
+# Claude Code config
+.claude/
