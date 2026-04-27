@@ -8,17 +8,23 @@ function shuffleArray(arr) {
   return arr;
 }
 
-function createShuffleOrder() {
-  const indices = Array.from({ length: QUESTIONS.length }, (_, i) => i);
-  shuffleArray(indices);
-  return indices;
+// Sample ATTEMPT_SIZE indices from the bank, shuffled.
+function sampleAttempt() {
+  const all = Array.from({ length: QUESTION_BANK.length }, (_, i) => i);
+  shuffleArray(all);
+  return all.slice(0, ATTEMPT_SIZE);
 }
 
-function applyShuffleOrder(order) {
-  const original = QUESTIONS.slice();
-  for (let i = 0; i < order.length; i++) {
-    QUESTIONS[i] = original[order[i]];
-  }
+// Build the active QUESTIONS array (185-item subset) from sampled bank indices.
+function buildActiveQuestions(activeIndices) {
+  QUESTIONS = activeIndices.map(i => QUESTION_BANK[i]);
+}
+
+// Pick UNSCORED_COUNT positions in [0..ATTEMPT_SIZE-1] to mark as field-test items.
+function pickUnscoredPositions() {
+  const positions = Array.from({ length: ATTEMPT_SIZE }, (_, i) => i);
+  shuffleArray(positions);
+  return new Set(positions.slice(0, UNSCORED_COUNT));
 }
 
 function getDomain(qOrCode) {
@@ -30,8 +36,10 @@ function getDomain(qOrCode) {
 function startExam(isStudyMode) {
   state.studyMode = !!isStudyMode;
   state.studyRevealed = false;
-  state.shuffleOrder = createShuffleOrder();
-  applyShuffleOrder(state.shuffleOrder);
+  state.activeIndices = sampleAttempt();
+  buildActiveQuestions(state.activeIndices);
+  // Study mode reveals all answers anyway, so the unscored distinction is meaningless there.
+  state.unscoredSet = isStudyMode ? new Set() : pickUnscoredPositions();
   state.screen = 'exam';
   state.currentQ = 0;
   state.answers = new Array(QUESTIONS.length).fill(-1);
@@ -51,8 +59,9 @@ function startExam(isStudyMode) {
 }
 
 function resumeExam(saved) {
-  state.shuffleOrder = saved.shuffleOrder;
-  applyShuffleOrder(saved.shuffleOrder);
+  state.activeIndices = saved.activeIndices;
+  buildActiveQuestions(state.activeIndices);
+  state.unscoredSet = new Set(saved.unscoredIndices || []);
   state.screen = saved.screen;
   state.currentQ = saved.currentQ;
   state.answers = saved.answers;

@@ -1,6 +1,6 @@
 # BCBA Mock Exam — 6th Edition Test Content Outline
 
-Interactive 522-question practice exam for BCBA certification, aligned with the 6th Edition Test Content Outline.
+Interactive practice exam for BCBA certification, aligned with the 6th Edition Test Content Outline. Each attempt randomly samples **185 questions** (175 scored + 10 unscored field-test items) from a **522-question bank** — mirroring the actual BCBA exam structure.
 
 ## Features
 
@@ -16,10 +16,12 @@ Interactive 522-question practice exam for BCBA certification, aligned with the 
 - **Dark Mode** — Automatic via system preference
 - **Accessible** — ARIA roles, keyboard-navigable options
 
-## Content Domains
+## Question Bank Coverage
 
-| Domain | Name | Questions |
-|--------|------|-----------|
+Each attempt draws 185 questions at random from this bank:
+
+| Domain | Name | Bank Total |
+|--------|------|------------|
 | A | Behaviorism & Philosophical Foundations | 23 |
 | B | Concepts & Principles | 69 |
 | C | Measurement, Data Display & Interpretation | 62 |
@@ -29,6 +31,7 @@ Interactive 522-question practice exam for BCBA certification, aligned with the 
 | G | Behavior-Change Procedures | 78 |
 | H | Selecting & Implementing Interventions | 60 |
 | I | Personnel Supervision & Management | 57 |
+| **Total** | | **522** |
 
 ## Usage
 

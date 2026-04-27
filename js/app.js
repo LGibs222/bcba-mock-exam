@@ -67,19 +67,28 @@ document.addEventListener('keydown', function(e) {
   }, { passive: true });
 })();
 
-// CSV results export
+// CSV results export — scored items only (matches real BCBA scoring)
 function exportResults() {
-  let csv = 'Domain,Domain Name,Correct,Total,Percentage\n';
+  let csv = 'Domain,Domain Name,Correct,Total Scored,Percentage\n';
   DOMAINS.forEach(d => {
-    const dqs = QUESTIONS.map((q, i) => ({ q, i })).filter(({ q }) => q.domain === d.code);
+    const dqs = QUESTIONS
+      .map((q, i) => ({ q, i }))
+      .filter(({ q, i }) => q.domain === d.code && isScored(i));
+    if (!dqs.length) return;
     const dCorrect = dqs.filter(({ q, i }) => state.answers[i] === q.correct).length;
     const dPct = Math.round((dCorrect / dqs.length) * 100);
     csv += `${d.code},"${d.name}",${dCorrect},${dqs.length},${dPct}%\n`;
   });
 
-  const totalCorrect = QUESTIONS.filter((q, i) => state.answers[i] === q.correct).length;
-  const totalPct = Math.round((totalCorrect / QUESTIONS.length) * 100);
-  csv += `\nOverall,Total,${totalCorrect},${QUESTIONS.length},${totalPct}%\n`;
+  let totalCorrect = 0, scoredTotal = 0;
+  QUESTIONS.forEach((q, i) => {
+    if (!isScored(i)) return;
+    scoredTotal++;
+    if (state.answers[i] === q.correct) totalCorrect++;
+  });
+  const totalPct = scoredTotal > 0 ? Math.round((totalCorrect / scoredTotal) * 100) : 0;
+  csv += `\nOverall,Scored Total,${totalCorrect},${scoredTotal},${totalPct}%\n`;
+  csv += `Note,"${state.unscoredSet.size} unscored field-test items excluded from scoring"\n`;
 
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);

@@ -1,6 +1,16 @@
 // State management with localStorage persistence
 const STORAGE_KEY = 'bcba_mock_exam';
 
+// Authentic mock exam structure (mirrors actual BCBA exam):
+// 185 total questions, 175 scored, 10 unscored field-test items
+const ATTEMPT_SIZE = 185;
+const UNSCORED_COUNT = 10;
+const SCORED_COUNT = ATTEMPT_SIZE - UNSCORED_COUNT;
+
+// QUESTIONS is the active session view (the 185 sampled from the bank).
+// Until a session starts, it points at the full bank for landing-page rendering.
+let QUESTIONS = QUESTION_BANK;
+
 let state = {
   screen: 'start',
   currentQ: 0,
@@ -13,8 +23,13 @@ let state = {
   reviewFilter: null,
   studyMode: false,
   studyRevealed: false,
-  shuffleOrder: null // array of original indices for persistence
+  activeIndices: null,    // 185 indices into QUESTION_BANK for this attempt
+  unscoredSet: new Set()  // positions (0..184) of unscored field-test items
 };
+
+function isScored(pos) {
+  return !state.unscoredSet.has(pos);
+}
 
 function saveState() {
   try {
@@ -26,7 +41,8 @@ function saveState() {
       timeLeft: state.timeLeft,
       submitted: state.submitted,
       studyMode: state.studyMode,
-      shuffleOrder: state.shuffleOrder
+      activeIndices: state.activeIndices,
+      unscoredIndices: [...state.unscoredSet]
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) { /* quota exceeded or private browsing */ }
@@ -37,7 +53,7 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const data = JSON.parse(raw);
-    if (!data.shuffleOrder || !data.answers) return null;
+    if (!data.activeIndices || !data.answers) return null;
     return data;
   } catch (e) { return null; }
 }

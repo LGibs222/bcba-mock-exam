@@ -12,7 +12,7 @@ function render() {
 function renderStart(el) {
   const saved = hasSavedState();
   const domainList = DOMAINS.map(d => {
-    const count = QUESTIONS.filter(q => q.domain === d.code).length;
+    const count = QUESTION_BANK.filter(q => q.domain === d.code).length;
     return `<div class="domain-pill"><span class="domain-code">${d.code}</span>${d.name} <span class="domain-count">${count}q</span></div>`;
   }).join('');
 
@@ -27,8 +27,8 @@ function renderStart(el) {
       <div class="info-grid">
         <div class="info-card">
           <div class="info-icon">&#128221;</div>
-          <div class="value">${QUESTIONS.length}</div>
-          <div class="label">Questions</div>
+          <div class="value">${ATTEMPT_SIZE}</div>
+          <div class="label">Questions per Attempt</div>
         </div>
         <div class="info-card">
           <div class="info-icon">&#9200;</div>
@@ -47,18 +47,25 @@ function renderStart(el) {
         </div>
       </div>
 
+      <p style="color:var(--muted);margin:0 auto 24px;max-width:680px;font-size:.95em;text-align:center">
+        Each attempt randomly samples <strong>${ATTEMPT_SIZE} questions</strong> from a
+        <strong>${QUESTION_BANK.length}-question bank</strong>, mirroring the actual BCBA exam structure:
+        <strong>${SCORED_COUNT} scored items</strong> plus <strong>${UNSCORED_COUNT} unscored field-test items</strong>
+        (hidden from you, just like the real exam). Your final score is based on the ${SCORED_COUNT} scored items only.
+      </p>
+
       <div class="features-section">
         <h3>How It Works</h3>
         <div class="features-grid">
           <div class="feature"><strong>Timed Exam</strong><br>4-hour countdown simulates real testing conditions</div>
-          <div class="feature"><strong>Randomized</strong><br>Questions are shuffled each attempt for varied practice</div>
+          <div class="feature"><strong>Randomized Sample</strong><br>Each attempt draws ${ATTEMPT_SIZE} fresh questions from the ${QUESTION_BANK.length}-question bank</div>
           <div class="feature"><strong>Flag &amp; Review</strong><br>Bookmark questions and return to them before submitting</div>
           <div class="feature"><strong>Detailed Results</strong><br>Domain breakdown shows your strengths and weak areas</div>
         </div>
       </div>
 
       <div class="domains-section">
-        <h3>Content Domains</h3>
+        <h3>Question Bank Coverage</h3>
         <div class="domains-list">${domainList}</div>
       </div>
 
@@ -177,19 +184,26 @@ function renderReview(el) {
 }
 
 function renderResults(el) {
+  // Score only the items that aren't field-test (unscored) items
   let correct = 0, incorrect = 0, unanswered = 0;
+  let scoredTotal = 0;
   QUESTIONS.forEach((q, i) => {
+    if (!isScored(i)) return; // skip unscored field-test items
+    scoredTotal++;
     if (state.answers[i] === -1) unanswered++;
     else if (state.answers[i] === q.correct) correct++;
     else incorrect++;
   });
-  const pct = Math.round((correct / QUESTIONS.length) * 100);
+  const pct = scoredTotal > 0 ? Math.round((correct / scoredTotal) * 100) : 0;
   const pass = pct >= PASS_THRESHOLD;
   const elapsed = TOTAL_TIME - state.timeLeft;
 
   let domainHtml = '';
   DOMAINS.forEach(d => {
-    const dqs = QUESTIONS.map((q, i) => ({ q, i })).filter(({ q }) => q.domain === d.code);
+    const dqs = QUESTIONS
+      .map((q, i) => ({ q, i }))
+      .filter(({ q, i }) => q.domain === d.code && isScored(i));
+    if (!dqs.length) return;
     const dCorrect = dqs.filter(({ q, i }) => state.answers[i] === q.correct).length;
     const dPct = Math.round((dCorrect / dqs.length) * 100);
     const barColor = dPct >= 80 ? 'var(--success)' : dPct >= 60 ? 'var(--warn)' : 'var(--danger)';
@@ -207,16 +221,20 @@ function renderResults(el) {
       <p style="color:var(--muted)">Completed in ${formatTime(elapsed)}</p>
       <div class="score-circle ${pass ? 'pass' : 'fail'}">
         <div class="pct">${pct}%</div>
-        <div class="label">${correct} / ${QUESTIONS.length}</div>
+        <div class="label">${correct} / ${scoredTotal}</div>
       </div>
       <div class="result-badge ${pass ? 'pass' : 'fail'}">${pass ? 'PASSED' : 'DID NOT PASS'}</div>
+      <p style="color:var(--muted);font-size:.9em;margin-top:-8px">
+        Scored on ${scoredTotal} of ${QUESTIONS.length} questions
+        (${state.unscoredSet.size} unscored field-test items excluded)
+      </p>
       <div style="display:flex;justify-content:center;gap:32px;margin:24px 0">
         <div><span style="font-size:1.5em;font-weight:700;color:var(--success)">${correct}</span><br><small style="color:var(--muted)">Correct</small></div>
         <div><span style="font-size:1.5em;font-weight:700;color:var(--danger)">${incorrect}</span><br><small style="color:var(--muted)">Incorrect</small></div>
         <div><span style="font-size:1.5em;font-weight:700;color:var(--muted)">${unanswered}</span><br><small style="color:var(--muted)">Unanswered</small></div>
       </div>
       <div class="domain-breakdown">
-        <h3 style="margin-bottom:12px;color:var(--primary)">Domain Breakdown</h3>
+        <h3 style="margin-bottom:12px;color:var(--primary)">Domain Breakdown <small style="font-weight:400;color:var(--muted);font-size:.75em">(scored items only)</small></h3>
         ${domainHtml}
       </div>
       <div class="actions">
