@@ -1,4 +1,4 @@
-// All render functions
+// All render functions — Calm Gradient theme
 
 function render() {
   const app = document.getElementById('app');
@@ -9,6 +9,9 @@ function render() {
   renderMap();
 }
 
+// =====================================================================
+// START SCREEN
+// =====================================================================
 function renderStart(el) {
   const saved = hasSavedState();
   const domainList = DOMAINS.map(d => {
@@ -18,54 +21,67 @@ function renderStart(el) {
 
   el.innerHTML = `
     <div class="start-screen">
+
+      <div class="start-nav">
+        <div class="brand">
+          <div class="brand-mark"></div>
+          <span>bcba.mock</span>
+        </div>
+        <div class="nav-pill" aria-hidden="true">
+          <span class="item active">Exam</span>
+          <span class="item">Study</span>
+          <span class="item">Domains</span>
+          <span class="item">About</span>
+        </div>
+      </div>
+
       <div class="hero">
-        <div class="hero-badge">BCBA</div>
-        <h1>BCBA Mock Exam</h1>
-        <div class="subtitle">6th Edition Test Content Outline</div>
+        <div class="eyebrow-pill">
+          <span class="dot"></span>
+          6th Edition · Test Content Outline
+        </div>
+        <h1>Calm focus. <span class="accent">Real practice.</span></h1>
+        <p class="subtitle">An authentic ${ATTEMPT_SIZE}-question simulation drawn fresh each attempt from a ${QUESTION_BANK.length}-question bank.</p>
+        <p class="lede">
+          Each attempt randomly samples <b>${ATTEMPT_SIZE} questions</b>, marks <b>${UNSCORED_COUNT}</b> as unscored field-test items (hidden from you, just like the real exam), and scores you on the remaining <b>${SCORED_COUNT}</b>. Mirrors the BACB exam structure exactly.
+        </p>
       </div>
 
       <div class="info-grid">
         <div class="info-card">
           <div class="info-icon">&#128221;</div>
           <div class="value">${ATTEMPT_SIZE}</div>
-          <div class="label">Questions per Attempt</div>
+          <div class="label">Per Attempt</div>
         </div>
         <div class="info-card">
           <div class="info-icon">&#9200;</div>
-          <div class="value">4 Hours</div>
+          <div class="value">4h</div>
           <div class="label">Time Limit</div>
         </div>
         <div class="info-card">
           <div class="info-icon">&#127919;</div>
-          <div class="value">70%</div>
-          <div class="label">Passing Score</div>
+          <div class="value">${SCORED_COUNT}</div>
+          <div class="label">Scored Items</div>
         </div>
         <div class="info-card">
           <div class="info-icon">&#128218;</div>
           <div class="value">9</div>
-          <div class="label">Domains (A\u2013I)</div>
+          <div class="label">Domains A&ndash;I</div>
         </div>
       </div>
 
-      <p style="color:var(--muted);margin:0 auto 24px;max-width:680px;font-size:.95em;text-align:center">
-        Each attempt randomly samples <strong>${ATTEMPT_SIZE} questions</strong> from a
-        <strong>${QUESTION_BANK.length}-question bank</strong>, mirroring the actual BCBA exam structure:
-        <strong>${SCORED_COUNT} scored items</strong> plus <strong>${UNSCORED_COUNT} unscored field-test items</strong>
-        (hidden from you, just like the real exam). Your final score is based on the ${SCORED_COUNT} scored items only.
-      </p>
-
       <div class="features-section">
-        <h3>How It Works</h3>
+        <h3>— How It Works —</h3>
         <div class="features-grid">
-          <div class="feature"><strong>Timed Exam</strong><br>4-hour countdown simulates real testing conditions</div>
-          <div class="feature"><strong>Randomized Sample</strong><br>Each attempt draws ${ATTEMPT_SIZE} fresh questions from the ${QUESTION_BANK.length}-question bank</div>
-          <div class="feature"><strong>Flag &amp; Review</strong><br>Bookmark questions and return to them before submitting</div>
-          <div class="feature"><strong>Detailed Results</strong><br>Domain breakdown shows your strengths and weak areas</div>
+          <div class="feature"><strong>Timed Exam</strong>4-hour countdown simulating real testing conditions.</div>
+          <div class="feature"><strong>Randomized Sample</strong>Each attempt draws fresh questions from the ${QUESTION_BANK.length}-question bank.</div>
+          <div class="feature"><strong>Flag &amp; Review</strong>Bookmark questions and revisit them before submitting.</div>
+          <div class="feature"><strong>Domain Breakdown</strong>Detailed results show your strengths and weak areas.</div>
         </div>
       </div>
 
       <div class="domains-section">
-        <h3>Question Bank Coverage</h3>
+        <h3>— Question Bank Coverage —</h3>
         <div class="domains-list">${domainList}</div>
       </div>
 
@@ -74,12 +90,12 @@ function renderStart(el) {
           <button class="btn btn-primary btn-lg" onclick="resumeExam(loadState())">
             &#9654; Resume Exam
           </button>
-          <button class="btn btn-secondary" onclick="clearState(); render()">
+          <button class="btn btn-secondary btn-sm" onclick="clearState(); render()">
             Discard Saved Progress
           </button>
           <div class="start-divider"><span>or start fresh</span></div>
         ` : ''}
-        <button class="btn btn-primary ${saved ? 'btn-outline' : 'btn-lg'}" onclick="clearState(); startExam(false)">
+        <button class="btn ${saved ? 'btn-outline' : 'btn-primary btn-lg'}" onclick="clearState(); startExam(false)">
           Begin Timed Exam
         </button>
         <button class="btn btn-secondary" onclick="clearState(); startExam(true)">
@@ -89,6 +105,9 @@ function renderStart(el) {
     </div>`;
 }
 
+// =====================================================================
+// EXAM SCREEN
+// =====================================================================
 function renderExam(el) {
   const q = QUESTIONS[state.currentQ];
   const d = getDomain(q.domain) || { code: q.domain || '?', name: q.domain_name || '' };
@@ -101,7 +120,7 @@ function renderExam(el) {
   el.innerHTML = `
     <div class="top-bar">
       ${isStudy
-        ? `<div style="font-weight:600">&#128214; Study Mode</div>`
+        ? `<div style="font-weight:600;display:flex;align-items:center;gap:8px">&#128214; Study Mode</div>`
         : `<div class="timer" id="timer">${formatTime(state.timeLeft)}</div>`
       }
       <div class="progress">${answered} / ${QUESTIONS.length} answered</div>
@@ -113,8 +132,8 @@ function renderExam(el) {
     <div class="question-card" role="radiogroup" aria-label="Question ${state.currentQ + 1}">
       <div class="q-header">
         <span class="q-number">Question ${state.currentQ + 1} of ${QUESTIONS.length}</span>
-        <span class="q-domain">Domain ${d.code}: ${d.name}</span>
-        <span class="q-flag ${isFlagged ? 'flagged' : ''}" onclick="toggleFlag()" title="Flag for review" role="button" aria-label="${isFlagged ? 'Unflag' : 'Flag'} question" tabindex="0">\u2691</span>
+        <span class="q-domain">Domain ${d.code} · ${d.name}</span>
+        <span class="q-flag ${isFlagged ? 'flagged' : ''}" onclick="toggleFlag()" title="Flag for review" role="button" aria-label="${isFlagged ? 'Unflag' : 'Flag'} question" tabindex="0">⚑</span>
       </div>
       <div class="q-stem">${q.stem}</div>
       <div class="options">
@@ -139,10 +158,13 @@ function renderExam(el) {
         <button class="btn btn-secondary btn-sm" onclick="goToFlagged(-1)">&#9664; Prev Flag</button>
         <button class="btn btn-secondary btn-sm" onclick="goToFlagged(1)">Next Flag &#9654;</button>
       </div>
-      <button class="btn btn-secondary btn-sm" onclick="goTo(${state.currentQ + 1})" ${state.currentQ === QUESTIONS.length - 1 ? 'disabled' : ''}>Next &#8594;</button>
+      <button class="btn btn-primary btn-sm" onclick="goTo(${state.currentQ + 1})" ${state.currentQ === QUESTIONS.length - 1 ? 'disabled' : ''}>Next &#8594;</button>
     </div>`;
 }
 
+// =====================================================================
+// REVIEW SCREEN
+// =====================================================================
 function renderReview(el) {
   const q = QUESTIONS[state.currentQ];
   const d = getDomain(q.domain) || { code: q.domain || '?', name: q.domain_name || '' };
@@ -150,17 +172,20 @@ function renderReview(el) {
   const correct = q.correct;
   const letters = ['A', 'B', 'C', 'D'];
   const isCorrect = userAns === correct;
+  const status = isCorrect ? '&#10003; Correct' : userAns === -1 ? '&mdash; Not Answered' : '&#10007; Incorrect';
+  const statusBg = isCorrect ? 'var(--success-bg)' : userAns === -1 ? 'var(--card-mute)' : 'var(--danger-bg)';
+  const statusColor = isCorrect ? 'var(--success)' : userAns === -1 ? 'var(--ink-mute)' : 'var(--danger)';
 
   el.innerHTML = `
-    <div class="top-bar" style="background:${isCorrect ? 'var(--success)' : userAns === -1 ? 'var(--muted)' : 'var(--danger)'}">
-      <div style="font-weight:600">${isCorrect ? '\u2713 Correct' : userAns === -1 ? '\u2014 Not Answered' : '\u2717 Incorrect'}</div>
-      <div class="progress">Review Mode \u2014 Question ${state.currentQ + 1} of ${QUESTIONS.length}</div>
+    <div class="top-bar" style="background:${statusBg}">
+      <div style="font-weight:700;color:${statusColor}">${status}</div>
+      <div class="progress">Review · Question ${state.currentQ + 1} of ${QUESTIONS.length}</div>
       <button class="btn btn-sm btn-secondary" onclick="backToResults()">Back to Results</button>
     </div>
     <div class="question-card">
       <div class="q-header">
-        <span class="q-number">Question ${state.currentQ + 1} of ${QUESTIONS.length}</span>
-        <span class="q-domain">Domain ${d.code}: ${d.name}</span>
+        <span class="q-number">Question ${state.currentQ + 1}</span>
+        <span class="q-domain">Domain ${d.code} · ${d.name}</span>
       </div>
       <div class="q-stem">${q.stem}</div>
       <div class="options">
@@ -179,16 +204,19 @@ function renderReview(el) {
     <div class="nav-bar">
       <button class="btn btn-secondary btn-sm" onclick="navReview(-1)">&#8592; Previous</button>
       <div></div>
-      <button class="btn btn-secondary btn-sm" onclick="navReview(1)">Next &#8594;</button>
+      <button class="btn btn-primary btn-sm" onclick="navReview(1)">Next &#8594;</button>
     </div>`;
 }
 
+// =====================================================================
+// RESULTS SCREEN
+// =====================================================================
 function renderResults(el) {
   // Score only the items that aren't field-test (unscored) items
   let correct = 0, incorrect = 0, unanswered = 0;
   let scoredTotal = 0;
   QUESTIONS.forEach((q, i) => {
-    if (!isScored(i)) return; // skip unscored field-test items
+    if (!isScored(i)) return;
     scoredTotal++;
     if (state.answers[i] === -1) unanswered++;
     else if (state.answers[i] === q.correct) correct++;
@@ -217,36 +245,47 @@ function renderResults(el) {
 
   el.innerHTML = `
     <div class="results">
-      <h1>Exam Results</h1>
-      <p style="color:var(--muted)">Completed in ${formatTime(elapsed)}</p>
+      <div class="eyebrow-pill" style="margin-bottom:0">
+        <span class="dot"></span>
+        Completed in ${formatTime(elapsed)}
+      </div>
+
+      <h1 style="margin-top:18px">Exam Results</h1>
+
       <div class="score-circle ${pass ? 'pass' : 'fail'}">
         <div class="pct">${pct}%</div>
         <div class="label">${correct} / ${scoredTotal}</div>
       </div>
       <div class="result-badge ${pass ? 'pass' : 'fail'}">${pass ? 'PASSED' : 'DID NOT PASS'}</div>
-      <p style="color:var(--muted);font-size:.9em;margin-top:-8px">
+      <p style="color:var(--ink-soft);font-size:.9rem;margin-top:8px">
         Scored on ${scoredTotal} of ${QUESTIONS.length} questions
         (${state.unscoredSet.size} unscored field-test items excluded)
       </p>
-      <div style="display:flex;justify-content:center;gap:32px;margin:24px 0">
-        <div><span style="font-size:1.5em;font-weight:700;color:var(--success)">${correct}</span><br><small style="color:var(--muted)">Correct</small></div>
-        <div><span style="font-size:1.5em;font-weight:700;color:var(--danger)">${incorrect}</span><br><small style="color:var(--muted)">Incorrect</small></div>
-        <div><span style="font-size:1.5em;font-weight:700;color:var(--muted)">${unanswered}</span><br><small style="color:var(--muted)">Unanswered</small></div>
+
+      <div style="display:flex;justify-content:center;gap:48px;margin:32px 0">
+        <div><span style="font-size:1.6rem;font-weight:800;color:var(--success)">${correct}</span><br><small style="color:var(--ink-soft);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase">Correct</small></div>
+        <div><span style="font-size:1.6rem;font-weight:800;color:var(--danger)">${incorrect}</span><br><small style="color:var(--ink-soft);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase">Incorrect</small></div>
+        <div><span style="font-size:1.6rem;font-weight:800;color:var(--ink-mute)">${unanswered}</span><br><small style="color:var(--ink-soft);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase">Unanswered</small></div>
       </div>
+
       <div class="domain-breakdown">
-        <h3 style="margin-bottom:12px;color:var(--primary)">Domain Breakdown <small style="font-weight:400;color:var(--muted);font-size:.75em">(scored items only)</small></h3>
+        <h3>Domain Breakdown <span style="font-weight:400;color:var(--ink-mute);font-size:.78em;text-transform:none;letter-spacing:0">(scored items only)</span></h3>
         ${domainHtml}
       </div>
+
       <div class="actions">
-        <button class="btn btn-primary" onclick="startReview()">Review All Questions</button>
-        <button class="btn btn-danger" onclick="startReview((q,i)=>state.answers[i]!==-1&&state.answers[i]!==q.correct)">Review Incorrect Only</button>
-        <button class="btn btn-secondary" onclick="startReview((q,i)=>state.answers[i]===-1)">Review Unanswered</button>
-        <button class="btn btn-success" onclick="exportResults()">&#128190; Download Results</button>
-        <button class="btn btn-secondary" onclick="state.screen='start';document.getElementById('mapToggle').style.display='none';render()">Retake Exam</button>
+        <button class="btn btn-primary btn-sm" onclick="startReview()">Review All</button>
+        <button class="btn btn-danger btn-sm" onclick="startReview((q,i)=>state.answers[i]!==-1&&state.answers[i]!==q.correct)">Review Incorrect</button>
+        <button class="btn btn-secondary btn-sm" onclick="startReview((q,i)=>state.answers[i]===-1)">Review Unanswered</button>
+        <button class="btn btn-success btn-sm" onclick="exportResults()">&#128190; Download CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="state.screen='start';document.getElementById('mapToggle').style.display='none';render()">Retake</button>
       </div>
     </div>`;
 }
 
+// =====================================================================
+// QUESTION MAP
+// =====================================================================
 function renderMap() {
   const map = document.getElementById('qMap');
   if (!map.classList.contains('show') && state.screen !== 'exam' && state.screen !== 'review') return;
@@ -255,7 +294,7 @@ function renderMap() {
   DOMAINS.forEach(d => {
     const domainQs = QUESTIONS.map((q, i) => ({ q, i })).filter(({ q }) => q.domain === d.code);
     if (!domainQs.length) return;
-    html += `<div class="domain-label">${d.code}. ${d.name}</div><div class="q-map-grid">`;
+    html += `<div class="domain-label">${d.code} · ${d.name}</div><div class="q-map-grid">`;
     domainQs.forEach(({ q, i }) => {
       let cls = 'q-map-btn';
       if (i === state.currentQ) cls += ' current';
