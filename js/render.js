@@ -11,9 +11,10 @@ function render() {
 
 function renderStart(el) {
   const saved = hasSavedState();
-  const domainList = DOMAINS.map(d =>
-    `<div class="domain-pill"><span class="domain-code">${d.code}</span>${d.name} <span class="domain-count">${d.end - d.start + 1}q</span></div>`
-  ).join('');
+  const domainList = DOMAINS.map(d => {
+    const count = QUESTIONS.filter(q => q.domain === d.code).length;
+    return `<div class="domain-pill"><span class="domain-code">${d.code}</span>${d.name} <span class="domain-count">${count}q</span></div>`;
+  }).join('');
 
   el.innerHTML = `
     <div class="start-screen">
@@ -26,7 +27,7 @@ function renderStart(el) {
       <div class="info-grid">
         <div class="info-card">
           <div class="info-icon">&#128221;</div>
-          <div class="value">175</div>
+          <div class="value">${QUESTIONS.length}</div>
           <div class="label">Questions</div>
         </div>
         <div class="info-card">
@@ -83,7 +84,7 @@ function renderStart(el) {
 
 function renderExam(el) {
   const q = QUESTIONS[state.currentQ];
-  const d = getDomain(q.num);
+  const d = getDomain(q.domain) || { code: q.domain || '?', name: q.domain_name || '' };
   const answered = state.answers.filter(a => a !== -1).length;
   const isFlagged = state.flagged.has(state.currentQ);
   const letters = ['A', 'B', 'C', 'D'];
@@ -137,7 +138,7 @@ function renderExam(el) {
 
 function renderReview(el) {
   const q = QUESTIONS[state.currentQ];
-  const d = getDomain(q.num);
+  const d = getDomain(q.domain) || { code: q.domain || '?', name: q.domain_name || '' };
   const userAns = state.answers[state.currentQ];
   const correct = q.correct;
   const letters = ['A', 'B', 'C', 'D'];

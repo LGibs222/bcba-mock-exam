@@ -21,8 +21,10 @@ function applyShuffleOrder(order) {
   }
 }
 
-function getDomain(qNum) {
-  return DOMAINS.find(d => qNum >= d.start && qNum <= d.end);
+function getDomain(qOrCode) {
+  // Accept either a domain code string (e.g., "A") or a question object with .domain
+  const code = typeof qOrCode === 'string' ? qOrCode : (qOrCode && qOrCode.domain);
+  return DOMAINS.find(d => d.code === code);
 }
 
 function startExam(isStudyMode) {
